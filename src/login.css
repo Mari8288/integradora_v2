@@ -1,0 +1,155 @@
+* { margin:0; padding:0; box-sizing:border-box; font-family:"Poppins",sans-serif; }
+body, html { height: 100%; overflow: hidden; }
+
+/* ==============================
+   SECCIÓN DE BIENVENIDA
+============================== */
+#welcome {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  background: url("/welcome.jpg") no-repeat center/cover;
+  position: relative;
+  overflow: hidden;
+}
+#welcome::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  z-index: 0;
+}
+
+#welcome-content {
+  position: relative;
+  z-index: 1;
+  color: #fff;
+  animation: fadeIn 1.5s ease-in-out;
+}
+
+#welcome h1 {
+  font-size: 4em;
+  color: #4ef037;
+  text-shadow: 0 0 30px #4ef037, 0 0 60px #4ef03770;
+  margin-bottom: 15px;
+  animation: float 3s ease-in-out infinite;
+}
+
+#welcome p {
+  font-size: 1.3em;
+  max-width: 700px;
+  margin: 0 auto 35px;
+  opacity: 0.95;
+  text-shadow: 0 0 10px #000;
+}
+
+#welcome button {
+  background: #4ef037;
+  border: none;
+  border-radius: 30px;
+  color: #111;
+  font-weight: bold;
+  font-size: 1rem;
+  padding: 14px 32px;
+  cursor: pointer;
+  box-shadow: 0 8px 25px rgba(0,0,0,0.8);
+  transition: 0.3s;
+}
+
+#welcome button:hover {
+  background: #3bc02a;
+  transform: scale(1.07);
+}
+
+/* ÍCONO AGRÍCOLA */
+.icon-tractor {
+  width: 90px;
+  height: 90px;
+  margin-bottom: 15px;
+  filter: drop-shadow(0 0 10px #4ef037);
+  animation: spin 6s linear infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes float {
+  0%,100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==============================
+   SECCIÓN DE LOGIN Y REGISTRO
+============================== */
+.section-box {
+  height: 100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: url("/welcome.jpg") no-repeat center/cover;
+  position:relative;
+}
+.section-box::before {
+  content:"";
+  position:absolute;
+  inset:0;
+  background:rgba(0,0,0,.6);
+  z-index:0;
+}
+.login-box {
+  position:relative;
+  z-index:1;
+  background:rgba(0,0,0,.85);
+  padding:40px;
+  border-radius:15px;
+  width:320px;
+  text-align:center;
+  box-shadow:0 8px 20px rgba(0,0,0,.5);
+}
+.login-box h2 {
+  color:#4ef037;
+  margin-bottom:25px;
+  font-size:2em;
+  text-shadow:0 0 10px #4ef037;
+}
+.login-box input {
+  width:100%;
+  padding:12px;
+  margin:10px 0;
+  border-radius:5px;
+  border:none;
+  font-size:1em;
+}
+.btn {
+  width:100%;
+  padding:12px;
+  margin-top:15px;
+  border:none;
+  border-radius:30px;
+  background:#4ef037;
+  color:#111;
+  font-weight:bold;
+  cursor:pointer;
+  transition:.3s;
+}
+.btn:hover {
+  background:#3bc02a;
+  transform:scale(1.05);
+}
+#loginMessage, #registerMessage {
+  margin-top:10px;
+  font-weight:bold;
+  color:#ff4d4d;
+  transition:opacity .3s;
+}
+a { color:#4ef037; cursor:pointer; }
