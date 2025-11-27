@@ -11,7 +11,7 @@ header {
   position:fixed; width:100%; z-index:1000;
 } 
 .brand{ display:flex; align-items:center; gap:12px; }
-header h1 { color:#4ef037; font-size:1.8em; text-shadow:0 0 10px #4ef037; }
+header h2 { color:#4ef037; font-size:1.8em; text-shadow:0 0 10px #4ef037; }
 nav { display:flex; gap:8px; }
 
 /* Botones del menú */
