@@ -1,4 +1,4 @@
-import './login.css';
+
 import { onAuth, registerUser, loginUser, logoutUser } from "./firebase.js";
 
 const welcomeSection  = document.getElementById('welcome');
@@ -52,7 +52,7 @@ function mapAuthError(err) {
 // Si ya hay sesión -> ir al Index
 onAuth(user => {
   if (user && !isRegistering) {
-    location.href = "index.html";   // nombre del dashboard en Vite
+    location.href = "main.html";   // nombre del dashboard en Vite
   }
 });
 
@@ -66,7 +66,8 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
   const pass  = document.getElementById("loginPassword").value;
 
   try {
-    await loginUser(email, pass);
+    const data = await loginUser(email, pass);
+    localStorage.setItem("user", JSON.stringify(data));
     loginMsg.style.color = "#4ef037";
     loginMsg.textContent = "✅ Bienvenido, redirigiendo…";
     setTimeout(() => location.href = "index.html", 800);

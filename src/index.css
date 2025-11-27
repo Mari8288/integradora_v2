@@ -91,6 +91,8 @@ section.active { display:flex; }
 #sobre p { max-width:900px; line-height:1.8; font-size:1.2em; font-weight:500; }
 
 /* Otras secciones */
+/* #datos {width: 100%; height: 100%; overflow: hidden;} */
+
 #datos, #alertas, #contacto { background:#1a1a1a; }
 #datos h2, #alertas h2, #contacto h2 { color:#4ef037; font-size:2em; margin-bottom:15px; }
 
@@ -162,14 +164,32 @@ footer {
   text-align:left;
 }
 #contacto .comments-title{ margin:0 0 10px; color:#4ef037; font-size:1.2rem; font-weight:700; }
-#contacto .comments-form{ display:flex; gap:10px; align-items:flex-start; margin-bottom:14px; }
+
+#contacto .comments-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+/* Pantallas grandes */
+@media (min-width: 768px) {
+  #contacto .comments-form {
+    flex-direction: row;       /* pasa a fila */
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+}
+
+
 #contacto .comments-form .form-control{
   flex:1; background:#0f0f0f; color:#eaeaea; border:1px solid #2a2a2a; border-radius:10px;
   padding:10px 12px; resize:vertical; min-height:70px; outline:none;
 }
 #contacto .comments-form .btn{ margin:0; white-space:nowrap; }
 
-#contacto .comments-list{ list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
+#contacto .comments-list{ height: 200px; overflow-y: scroll ; list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:10px; }
 #contacto .comment-item{
   background:#0f0f0f; border:1px solid #2a2a2a; border-radius:12px; padding:12px;
 }
@@ -411,18 +431,31 @@ body, html { height: 100%; overflow: hidden; }
   border:none;
   font-size:1em;
 }
+
 .btn {
-  width:100%;
-  padding:12px;
-  margin-top:15px;
-  border:none;
-  border-radius:30px;
-  background:#4ef037;
-  color:#111;
-  font-weight:bold;
-  cursor:pointer;
-  transition:.3s;
+  width: 100%;                 /* móvil por defecto */
+  padding: 12px 24px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 30px;
+  background: #4ef037;
+  color: #111;
+  font-weight: bold;
+  cursor: pointer;
+  transition: .3s;
+  display: block;              /* para permitir centrar */
+  text-align: center;
 }
+
+/* En pantallas grandes */
+@media (min-width: 768px) {
+  .btn {
+    width: auto;               /* ocupa solo lo necesario */
+    margin: 15px auto 0;       /* lo centra horizontalmente */
+    display: inline-block;     /* tamaño automático */
+  }
+}
+
 .btn:hover {
   background:#3bc02a;
   transform:scale(1.05);
@@ -434,3 +467,74 @@ body, html { height: 100%; overflow: hidden; }
   transition:opacity .3s;
 }
 a { color:#4ef037; cursor:pointer; }
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  gap: 10px;
+}
+
+/* BRAND FIJO */
+header .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap; /* evita que se parta el título */
+}
+
+header h1 {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* NAV SCROLLEABLE */
+header nav {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;       /* scroll solo aquí */
+  white-space: nowrap;    /* los botones no se parten */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;  /* Firefox: oculta scroll */
+  max-width: 100%;
+}
+
+/* Chrome, Safari, Edge → ocultar barra */
+header nav::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* BOTONES */
+header nav button {
+  padding: 6px 12px;
+  background: #e6e6e6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  white-space: nowrap;
+}
+
+header nav button:hover {
+  background: #d0d0d0;
+}
+
+/* Ajuste en móviles */
+@media (max-width: 600px) {
+  header {
+    flex-wrap: nowrap;
+  }
+
+  header h1 {
+    font-size: 1rem;
+  }
+}
+
+
+/* ===== GRAFICA RESPONSIVE (LAPTOP + CELULAR) ===== */
+.container-graphic{
+  width: 100%;
+  height: 100%;
+}

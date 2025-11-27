@@ -13,18 +13,17 @@ import {
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import {
   getFirestore,
+  collection,
   doc,
   setDoc,
-  serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import {
-  getDatabase,
-  ref,
+  serverTimestamp,
+  orderBy,
   query,
+  limit,
   limitToLast,
-  onValue,
-  onChildAdded
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+  getDocs,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 /* 🔧 Configuración TerraNova */
 const firebaseConfig = {
@@ -40,7 +39,6 @@ const firebaseConfig = {
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
-const rtdb = getDatabase(app);
 
 /* 🔐 Persistencia de sesión (sin romper el módulo) */
 setPersistence(auth, indexedDBLocalPersistence).catch((err) => {
@@ -86,7 +84,10 @@ export async function registerUser({ name, email, password, passwordHash }) {
 /* 🔑 Login / Logout */
 export async function loginUser(email, password) {
   const res = await signInWithEmailAndPassword(auth, email, password);
-  return res.user;
+  return {
+      id: res.user.uid,          
+      name:res.user.displayName 
+  };
 }
 
 export function logoutUser() {
@@ -96,19 +97,71 @@ export function logoutUser() {
 /* 📡 RTDB: Lecturas para la gráfica de Index.html */
 
 // Cargar últimos N registros una sola vez
-export function listenLecturasOnce(path, limit, cb) {
-  const q = query(ref(rtdb, path), limitToLast(limit));
-  onValue(
-    q,
-    (snap) => cb(snap.val() || {}),
-    { onlyOnce: true }
-  );
+// Lote inicial desde Firestore
+// path = ruta de la colección de lecturas (por ejemplo: "usuarios/UID/dispositivos/DEVICE/lecturas")
+// limitCount = cuántos puntos máximo quieres traer
+// cb = callback que recibe un array ordenado ascendente por tiempo
+export async function listenLecturasOnce(path, limitCount, cb) {
+  try {
+    const lecturasCol = collection(db, path);
+
+    // Asumo que cada documento tiene un campo "timestamp" (number o Timestamp)
+    // Traemos las últimas N lecturas, ordenadas desc, y luego las invertimos.
+    const qLecturas = query(
+      lecturasCol,
+      orderBy("timestamp", "desc"),
+      limit(limitCount)
+    );
+
+    const snap = await getDocs(qLecturas);
+
+    // Los documentos vienen desc (la más nueva primero), los invertimos a asc para la gráfica
+    const data = snap.docs
+      .map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }))
+      .reverse(); // ahora van de la más vieja a la más nueva
+
+    cb(data);
+  } catch (err) {
+    console.error("Error en listenLecturasOnce (Firestore):", err);
+    cb([]); // Para que tu código no reviente
+  }
 }
 
+
+
 // Escuchar nuevas lecturas
+// Escuchar nuevas lecturas en tiempo real desde Firestore
+// cb(ts, lectura) -> lo mismo que usabas antes
 export function listenLecturasStream(path, cb) {
-  const q = query(ref(rtdb, path), limitToLast(1));
-  return onChildAdded(q, (snap) => {
-    cb(snap.key, snap.val());
+  const lecturasCol = collection(db, path);
+
+  // Escuchamos siempre la última lectura según "timestamp"
+  const qLecturas = query(
+    lecturasCol,
+    orderBy("timestamp", "asc"),
+    limitToLast(1)
+  );
+
+  // onSnapshot = equivalente a "stream" en Firestore
+  const unsubscribe = onSnapshot(qLecturas, (snapshot) => {
+    snapshot.docChanges().forEach((change) => {
+      if (change.type === "added") {
+        const doc = change.doc;
+        const data = doc.data();
+
+        // Aquí puedes usar el propio timestamp del documento
+        const ts = data.timestamp || null; // o doc.createTime, según cómo lo manejes
+
+        cb(doc.id, data);
+      }
+    });
+  }, (error) => {
+    console.error("Error en listenLecturasStream (Firestore):", error);
   });
+
+  // Devuelves la función para dejar de escuchar si la necesitas
+  return unsubscribe;
 }

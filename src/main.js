@@ -212,7 +212,7 @@ logoutBtn?.addEventListener('click', async ()=>{
   try {
     await logoutUser();
     alert("Sesión cerrada correctamente");
-    window.location.href = "login.html";
+    window.location.href = "index.html";
   } catch(err){
     console.error(err);
     alert("Error al cerrar sesión");
@@ -233,12 +233,7 @@ window.openTab = function(tabName){
 ========================= */
 const MAX_POINTS = 60;
 
-// ID de dispositivo (puedes cambiarlo según tu lógica)
-const DEVICE_ID = localStorage.getItem("tn_deviceId") || "DISPOSITIVO_001";
 
-// Estructura A: lecturas por dispositivo
-const PATH_BASE = `lecturas/${DEVICE_ID}`;
-    
 let sensorChart = null;
 
 function createChart() {
@@ -303,66 +298,63 @@ function createChart() {
 };
 
 function pushPoint(ts, lectura) {
-  if (!sensorChart) return;
+  try {
+    if (!sensorChart) return;
 
-  const label = new Date(lectura.fecha).toLocaleTimeString("es-MX", { hour12: false });
+    const label = new Date(lectura.timestamp.seconds * 1000)
+      .toLocaleTimeString("es-MX", { hour12: false });
 
-  sensorChart.data.labels.push(label);
-  if (sensorChart.data.labels.length > MAX_POINTS) {
-    sensorChart.data.labels.shift();
+    // label
+    sensorChart.data.labels.push(label);
+    if (sensorChart.data.labels.length > MAX_POINTS) sensorChart.data.labels.shift();
+
+    // HUMEDAD → soilPct
+    const hum = lectura.soilPct ?? null;
+    sensorChart.data.datasets[0].data.push(hum);
+    if (sensorChart.data.datasets[0].data.length > MAX_POINTS)
+      sensorChart.data.datasets[0].data.shift();
+
+    // TEMPERATURA → temperature
+    const temp = lectura.temperature ?? null;
+    sensorChart.data.datasets[1].data.push(temp);
+    if (sensorChart.data.datasets[1].data.length > MAX_POINTS)
+      sensorChart.data.datasets[1].data.shift();
+
+    sensorChart.update("none");
+  } catch (err) {
+    console.error("Error pushPoint:", err);
   }
+};
 
-  const hum = lectura.hum ?? lectura.humedad ?? lectura.soilHum ?? lectura.humedadSuelo ?? null;
-  sensorChart.data.datasets[0].data.push(hum);
-  if (sensorChart.data.datasets[0].data.length > MAX_POINTS) {
-    sensorChart.data.datasets[0].data.shift();
-  }
-
-  const temp = lectura.temp ?? lectura.temperatura ?? null;
-  sensorChart.data.datasets[1].data.push(temp);
-  if (sensorChart.data.datasets[1].data.length > MAX_POINTS) {
-    sensorChart.data.datasets[1].data.shift();
-  }
-
-  sensorChart.update("none");
-}
-
-function redrawBatch(obj) {
-  if (!sensorChart || !obj) return;
+function redrawBatch(arr) {
+  if (!sensorChart || !arr) return;
 
   sensorChart.data.labels = [];
-  sensorChart.data.datasets.forEach(d => { d.data = []; });
+  sensorChart.data.datasets[0].data = [];
+  sensorChart.data.datasets[1].data = [];
 
-  const pares = Object.entries(obj).sort((a, b) => Number(a[1].fecha) - Number(b[1].fecha));
-  for (const [ts, lectura] of pares) {
-    pushPoint(ts, lectura);
+  for (const lectura of arr) {
+    pushPoint(lectura.id, lectura);
   }
 }
+
 
 document.addEventListener("DOMContentLoaded", () => {
   sensorChart = createChart();
   if (!sensorChart) return;
 
   onAuth((user) => {
-    if (!user) {
-      console.warn("No autenticado; no se escuchan lecturas aún.");
-      return;
-    }
+  if (!user) return;
 
-    const path =
-      typeof PATH_BASE === "function"
-        ? PATH_BASE(user.uid)   // Estructura B
-        : PATH_BASE;            // Estructura A
+  const path = `usuarios/${user.uid}/dispositivos/000000000000/lecturas`;
 
-    listenLecturasOnce("dispositivos/Terranova01/lecturas", MAX_POINTS, (batch) => {
-      redrawBatch(batch);
-      listenLecturasStream("dispositivos/Terranova01/lecturas", (ts, lectura) => {
-        if(typeof lectura === "string") return;
-        console.log("Lectura; ", lectura); 
-        pushPoint(ts, lectura);
-      });
+  listenLecturasOnce(path, MAX_POINTS, (batch) => {
+    redrawBatch(batch);
+    listenLecturasStream(path, (id, lectura) => {
+      pushPoint(id, lectura);
     });
   });
+});
 });
 
 /* =========================
@@ -385,7 +377,7 @@ btnConfirm?.addEventListener("click", async (e) => {
   try {
     await logoutUser();
     try { window.showToast?.("Sesión cerrada correctamente.", "success"); } catch {}
-    setTimeout(() => { window.location.href = "login.html"; }, 600);
+    setTimeout(() => { window.location.href = "index.html"; }, 600);
   } catch (err) {
     console.error(err);
     try { window.showToast?.("No se pudo cerrar sesión. Inténtalo de nuevo.", "error"); } catch {
